@@ -3,18 +3,20 @@
 import { isManual, isStripe } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@medusajs/ui"
+import { Button, toast } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
+  customer: HttpTypes.StoreCustomer | null
   "data-testid": string
 }
 
 const PaymentButton: React.FC<PaymentButtonProps> = ({
   cart,
+  customer,
   "data-testid": dataTestId,
 }) => {
   const notReady =
@@ -30,6 +32,7 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
     case isStripe(paymentSession?.provider_id):
       return (
         <StripePaymentButton
+          customer={customer}
           notReady={notReady}
           cart={cart}
           data-testid={dataTestId}
@@ -46,10 +49,12 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
 
 const StripePaymentButton = ({
   cart,
+  customer,
   notReady,
   "data-testid": dataTestId,
 }: {
   cart: HttpTypes.StoreCart
+  customer: HttpTypes.StoreCustomer | null
   notReady: boolean
   "data-testid"?: string
 }) => {
@@ -77,6 +82,11 @@ const StripePaymentButton = ({
   const disabled = !stripe || !elements ? true : false
 
   const handlePayment = async () => {
+    if (customer?.email) {
+      toast.error("Please login in");
+      return
+    }
+
     setSubmitting(true)
 
     if (!stripe || !elements || !card || !cart) {

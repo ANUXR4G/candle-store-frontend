@@ -32,7 +32,7 @@ export default async function CheckoutForm({
 
       <Payment cart={cart} availablePaymentMethods={paymentMethods} />
 
-      <Review cart={cart} />
+      <Review customer={customer} cart={cart} />
     </div>
   )
 }
